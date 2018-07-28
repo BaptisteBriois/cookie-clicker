@@ -7,36 +7,45 @@ export default new Vuex.Store({
     state: {
         cookiesCount: 0,
         cookiesPerSecond: 0,
-        cursorsCount: 0,
-        grandmasCount: 0,
-        cursorPrice: 10,
-        grandmaPrice: 20,
+        cookiesOnClick: 1,
+        buildings: {
+            cursor: {
+                count: 0,
+                price: 15,
+                cps: 0.1
+            },
+            grandma: {
+                count: 0,
+                price: 100,
+                cps: 1
+            }
+        }
     },
     getters: {
         cookiesCount: state => state.cookiesCount,
         cookiesPerSecond: state => state.cookiesPerSecond,
-        cursorsCount: state => state.cursorsCount,
-        grandmasCount: state => state.grandmasCount,
-        cursorPrice: state => state.cursorPrice,
-        grandmaPrice: state => state.grandmaPrice,
+        buildings: state => state.buildings
     },
     mutations: {
         increment(state, clickedElement) {
-            const {cookiesCount, cookiesPerSecond, cursorPrice, grandmaPrice} = state;
-            if (clickedElement == "cookies") {
-                state.cookiesCount++;
-            } else if (clickedElement == "cookiesPerSecond") {
+            const {cookiesCount, cookiesPerSecond, cookiesOnClick, buildings} = state;
+            if (clickedElement === "cookie") {
+                state.cookiesCount += cookiesOnClick;
+            } else if (clickedElement === "cookiesPerSecond") {
+                /*
+                Incrémente le compteur de cookies tous les centièmes de seconde par le nombre de cookies par seconde divisé par 100
+                 */
                 state.cookiesCount += (cookiesPerSecond / 100);
-            } else if (clickedElement == "cursors" && cookiesCount >= cursorPrice) {
-                state.cursorsCount++;
-                state.cookiesPerSecond += 0.2;
-                state.cookiesCount -= cursorPrice;
-                state.cursorPrice = cursorPrice * 1.2;
-            } else if (clickedElement == "grandmas" && cookiesCount >= grandmaPrice) {
-                state.grandmasCount++;
-                state.cookiesPerSecond += 1;
-                state.cookiesCount -= grandmaPrice;
-                state.grandmaPrice = grandmaPrice * 1.2;
+            } else if (clickedElement === "cursor" && cookiesCount >= buildings.cursor.price) {
+                state.buildings.cursor.count++;
+                state.cookiesPerSecond += buildings.cursor.cps;
+                state.cookiesCount -= buildings.cursor.price;
+                state.buildings.cursor.price = buildings.cursor.price * 1.15;
+            } else if (clickedElement === "grandma" && cookiesCount >= buildings.grandma.price) {
+                state.buildings.grandma.count++;
+                state.cookiesPerSecond += buildings.grandma.cps;
+                state.cookiesCount -= buildings.grandma.price;
+                state.buildings.grandma.price = buildings.grandma.price * 1.15;
             }
         }
     },
