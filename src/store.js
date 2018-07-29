@@ -6,10 +6,10 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
     state: {
-        cookiesCount: 0,
-        cookiesPerSecond: 0,
-        cookiesOnClick: 1,
-        buildings: {
+        cookiesCount: localStorage.getItem("cookiesCount") ? parseFloat(localStorage.getItem("cookiesCount")) : 0,
+        cookiesPerSecond: localStorage.getItem("cookiesPerSecond") ? parseFloat(localStorage.getItem("cookiesPerSecond")) : 0,
+        cookiesOnClick: localStorage.getItem("cookiesOnClick") ? parseFloat(localStorage.getItem("cookiesOnClick")) : 1,
+        buildings: localStorage.getItem("buildings") ? JSON.parse(localStorage.getItem("buildings")) : {
             cursor: {
                 count: 0,
                 price: 15,
@@ -26,7 +26,7 @@ export default new Vuex.Store({
                 cps: 8
             }
         },
-        upgrades: {
+        upgrades: localStorage.getItem("upgrades") ? JSON.parse(localStorage.getItem("upgrades")) : {
             cursor: [
                 {
                     id: 1,
@@ -106,7 +106,7 @@ export default new Vuex.Store({
                 },
             ]
         },
-        displayedUpgrades: []
+        displayedUpgrades: localStorage.getItem("displayedUpgrades") ? JSON.parse(localStorage.getItem("displayedUpgrades")) : []
     },
     getters: {
         cookiesCount: state => state.cookiesCount,
@@ -147,7 +147,7 @@ export default new Vuex.Store({
         },
 
         improvement(state, upgradeId) {
-            const {cookiesPerSecond, cookiesOnClick, buildings, upgrades} = state;
+            const {cookiesCount, cookiesPerSecond, cookiesOnClick, buildings, upgrades} = state;
 
             /*
             Recherche de l'id de l'amélioration achetée pour l'activer et la retirer d'achat
@@ -160,7 +160,7 @@ export default new Vuex.Store({
                         return displayedUpgrade.id === upgradeId;
                     });
 
-                    state.cookiesPerSecond = cookiesPerSecond + buildings[building].cps;
+                    state.cookiesPerSecond = cookiesPerSecond + buildings[building].count * buildings[building].cps;
                     buildings[building].cps = buildings[building].cps * 2;
 
                     /*
@@ -168,9 +168,20 @@ export default new Vuex.Store({
                      */
                     if (building === "cursor") (
                         state.cookiesOnClick = cookiesOnClick * 2
-                    )
+                    );
+
+                    state.cookiesCount -= selectedUpgrade.price;
                 }
             })
+        },
+
+        save(state) {
+            localStorage.setItem("cookiesCount", state.cookiesCount);
+            localStorage.setItem("cookiesPerSecond", state.cookiesPerSecond);
+            localStorage.setItem("cookiesOnClick", state.cookiesOnClick);
+            localStorage.setItem("buildings", JSON.stringify(state.buildings));
+            localStorage.setItem("upgrades", JSON.stringify(state.upgrades));
+            localStorage.setItem("displayedUpgrades", JSON.stringify(state.displayedUpgrades));
         }
     },
     actions: {}

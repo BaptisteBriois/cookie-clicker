@@ -4,6 +4,9 @@
             <p id="cookiesCount">{{ cookiesCount.toFixed(0) }} cookies</p>
             <p id="cookiesPerSecond">{{ cookiesPerSecond.toFixed(2) }} cookies per second</p>
             <img id="cookie" width="350" height="350" src="../assets/images/PerfectCookie.png" @click="increment('cookie')"/>
+            <a href="#" @click="save()">
+                <button>SAVE</button>
+            </a>
         </div>
 
         <div id="upgradesContainer">
@@ -47,6 +50,10 @@
 
             improvement(selectedUpgrade) {
                 this.$store.commit('improvement', selectedUpgrade);
+            },
+
+            save() {
+                this.$store.commit('save');
             }
         },
         computed: {
@@ -66,6 +73,13 @@
                     this.$store.commit('increment', "cookiesPerSecond");
                 }
             }.bind(this), 10);
+
+            /*
+            Sauvegarde la partie toutes les 10 secondes
+             */
+            setInterval(function () {
+                this.$store.commit('save');
+            }.bind(this), 10000);
         }
     }
 </script>
