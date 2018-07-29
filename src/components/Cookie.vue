@@ -3,6 +3,7 @@
         <div id="cookiesContainer">
             <p id="cookiesCount">{{ cookiesCount.toFixed(0) }} cookies</p>
             <p id="cookiesPerSecond">{{ cookiesPerSecond.toFixed(2) }} cookies per second</p>
+            <p id="cookiesOnClick">{{ cookiesOnClick.toFixed(2) }} cookies on click</p>
             <img id="cookie" width="350" height="350" src="../assets/images/PerfectCookie.png" @click="increment('cookie')"/>
             <a href="#" @click="save()">
                 <button>SAVE</button>
@@ -60,6 +61,7 @@
             ...mapGetters([
                 'cookiesCount',
                 'cookiesPerSecond',
+                'cookiesOnClick',
                 'buildings',
                 'upgrades'
             ])

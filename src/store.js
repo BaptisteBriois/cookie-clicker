@@ -9,6 +9,7 @@ export default new Vuex.Store({
         cookiesCount: localStorage.getItem("cookiesCount") ? parseFloat(localStorage.getItem("cookiesCount")) : 0,
         cookiesPerSecond: localStorage.getItem("cookiesPerSecond") ? parseFloat(localStorage.getItem("cookiesPerSecond")) : 0,
         cookiesOnClick: localStorage.getItem("cookiesOnClick") ? parseFloat(localStorage.getItem("cookiesOnClick")) : 1,
+        clicksCount: localStorage.getItem("clicksCount") ? parseFloat(localStorage.getItem("clicksCount")) : 0,
         buildings: localStorage.getItem("buildings") ? JSON.parse(localStorage.getItem("buildings")) : {
             cursor: {
                 count: 0,
@@ -104,6 +105,24 @@ export default new Vuex.Store({
                     price: 550000,
                     active: false
                 },
+            ],
+            click: [
+                {
+                    id: 10,
+                    name: "Plastic mouse",
+                    description: "Clicking gains +1% of your CpS. \"Slightly squeaky.\"",
+                    need: 1000,
+                    price: 50000,
+                    active: false
+                },
+                {
+                    id: 11,
+                    name: "Iron mouse\t",
+                    description: "Clicking gains +1% of your CpS. \"Click like it's 1,349!\"",
+                    need: 100000,
+                    price: 5000000,
+                    active: false
+                }
             ]
         },
         displayedUpgrades: localStorage.getItem("displayedUpgrades") ? JSON.parse(localStorage.getItem("displayedUpgrades")) : []
@@ -111,14 +130,21 @@ export default new Vuex.Store({
     getters: {
         cookiesCount: state => state.cookiesCount,
         cookiesPerSecond: state => state.cookiesPerSecond,
+        cookiesOnClick: state => state.cookiesOnClick,
         buildings: state => state.buildings,
         upgrades: state => state.displayedUpgrades
     },
     mutations: {
         increment(state, selectedBuilding) {
-            const {cookiesCount, cookiesPerSecond, cookiesOnClick, buildings, upgrades} = state;
+            const {cookiesCount, cookiesPerSecond, cookiesOnClick, clicksCount, buildings, upgrades} = state;
             if (selectedBuilding === "cookie") {
                 state.cookiesCount += cookiesOnClick;
+                state.clicksCount += 1;
+
+                let searchClickUpgrade = _.find(upgrades.click, {need: state.clicksCount});
+                if (searchClickUpgrade) {
+                    state.displayedUpgrades = _.sortBy(_.concat(state.displayedUpgrades, searchClickUpgrade), 'price');
+                }
             } else if (selectedBuilding === "cookiesPerSecond") {
                 /*
                 Incrémente le compteur de cookies tous les centièmes de seconde par le nombre de cookies par seconde divisé par 100
@@ -137,11 +163,10 @@ export default new Vuex.Store({
                     /*
                     Récupération des améliorations qui peuvent être proposées au joueur
                      */
-                    state.displayedUpgrades = [];
-                    Object.keys(upgrades).forEach(function (building) {
-                        let displayableUpgrades = _.filter(upgrades[building], function (upgrade) { return (!upgrade.active && upgrade.need <= buildings[building].count); })
-                        state.displayedUpgrades = _.sortBy(_.concat(state.displayedUpgrades, displayableUpgrades), 'price');
-                    })
+                    let displayableUpgrades = _.filter(upgrades[selectedBuilding], function (upgrade) {
+                        return (!upgrade.active && upgrade.need === buildings[selectedBuilding].count);
+                    });
+                    state.displayedUpgrades = _.sortBy(_.concat(state.displayedUpgrades, displayableUpgrades), 'price');
                 }
             }
         },
@@ -154,21 +179,25 @@ export default new Vuex.Store({
              */
             Object.keys(upgrades).forEach(function (building) {
                 let selectedUpgrade = _.find(upgrades[building], {id: upgradeId});
-                if (selectedUpgrade) {
+                if (selectedUpgrade && cookiesCount >= selectedUpgrade.price) {
                     selectedUpgrade.active = true;
                     _.remove(state.displayedUpgrades, function (displayedUpgrade) {
                         return displayedUpgrade.id === upgradeId;
                     });
 
-                    state.cookiesPerSecond = cookiesPerSecond + buildings[building].count * buildings[building].cps;
-                    buildings[building].cps = buildings[building].cps * 2;
+                    if (building === "click") {
+                        state.cookiesOnClick += cookiesPerSecond / 100;
+                    } else {
+                        state.cookiesPerSecond = cookiesPerSecond + buildings[building].count * buildings[building].cps;
+                        buildings[building].cps = buildings[building].cps * 2;
 
-                    /*
-                    Si le curseur est amélioré, le click sur le cookie l'est aussi
-                     */
-                    if (building === "cursor") (
-                        state.cookiesOnClick = cookiesOnClick * 2
-                    );
+                        /*
+                        Si le curseur est amélioré, le click sur le cookie l'est aussi
+                         */
+                        if (building === "cursor") {
+                            state.cookiesOnClick = cookiesOnClick * 2
+                        }
+                    }
 
                     state.cookiesCount -= selectedUpgrade.price;
                 }
